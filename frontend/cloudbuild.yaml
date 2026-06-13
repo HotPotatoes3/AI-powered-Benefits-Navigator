@@ -1,0 +1,13 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_BASE_URL=${_NEXT_PUBLIC_API_BASE_URL}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/benefits-navigator-frontend'
+      - '.'
+images:
+  - 'gcr.io/$PROJECT_ID/benefits-navigator-frontend'
+substitutions:
+  _NEXT_PUBLIC_API_BASE_URL: 'https://YOUR_BACKEND_CLOUD_RUN_URL'
