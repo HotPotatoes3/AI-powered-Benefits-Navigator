@@ -22,6 +22,16 @@ export default function Home() {
           Answer a few simple questions about your situation and discover available government and community benefits tailored to you.
         </p>
 
+        <div className="mx-auto max-w-3xl rounded-2xl border border-blue-100 bg-white p-6 shadow-lg">
+          <h2 className="text-xl font-semibold text-gray-900">Start with one of these life situations</h2>
+          <p className="mt-2 text-gray-600">The chat begins with five starter options: student, employed, unemployed, retired, and other.</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3 text-sm font-medium text-primary">
+            {['student', 'employed', 'unemployed', 'retired', 'other'].map((option) => (
+              <span key={option} className="rounded-full border border-primary/30 bg-blue-50 px-4 py-2 capitalize">{option}</span>
+            ))}
+          </div>
+        </div>
+
         {/* Features Grid */}
         <div className="grid md:grid-cols-3 gap-8 mt-16">
           <div className="bg-white p-8 rounded-lg shadow-lg">

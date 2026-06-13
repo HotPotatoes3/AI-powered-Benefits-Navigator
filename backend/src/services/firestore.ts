@@ -20,6 +20,22 @@ interface Benefit {
   state?: string
 }
 
+interface ConversationRecord {
+  message: string
+  lifeSituation?: string
+  conversationHistory?: Array<{ role: string; content: string }>
+  response?: string
+  benefits?: Array<{ name: string; description: string }>
+}
+
+const DEFAULT_SITUATION_PROFILES = [
+  { id: 'student', label: 'Student', summary: 'Students and recent learners', focus: 'education, tuition, and student support' },
+  { id: 'employed', label: 'Employed', summary: 'Working adults and employees', focus: 'workplace benefits, income support, and training' },
+  { id: 'unemployed', label: 'Unemployed', summary: 'People currently without work', focus: 'job-seeker support, unemployment aid, and retraining' },
+  { id: 'retired', label: 'Retired', summary: 'Retirees and older adults', focus: 'pension, housing, and healthcare support' },
+  { id: 'other', label: 'Other', summary: 'Other or mixed circumstances', focus: 'custom benefits recommendations' },
+]
+
 export const firestoreService = {
   async getAllBenefits(): Promise<Benefit[]> {
     try {
@@ -77,6 +93,44 @@ export const firestoreService = {
     } catch (error) {
       console.error('Error saving benefit:', error)
       throw new Error('Failed to save benefit')
+    }
+  },
+
+  async seedSituationProfiles(): Promise<void> {
+    try {
+      const batch = db.batch()
+      const situationsRef = db.collection('situations')
+
+      DEFAULT_SITUATION_PROFILES.forEach((profile) => {
+        batch.set(
+          situationsRef.doc(profile.id),
+          {
+            label: profile.label,
+            summary: profile.summary,
+            focus: profile.focus,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        )
+      })
+
+      await batch.commit()
+    } catch (error) {
+      console.error('Error seeding life-situation profiles:', error)
+    }
+  },
+
+  async saveConversationEntry(entry: ConversationRecord): Promise<string> {
+    try {
+      const docRef = await db.collection('conversations').add({
+        ...entry,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      })
+
+      return docRef.id
+    } catch (error) {
+      console.error('Error saving conversation feedback:', error)
+      throw new Error('Failed to save conversation entry')
     }
   },
 }

@@ -26,7 +26,8 @@ export const geminiService = {
   async generateResponse(
     userMessage: string,
     conversationHistory: ConversationMessage[],
-    context: string
+    context: string,
+    lifeSituation?: string
   ): Promise<GenerateResponseResult> {
     try {
       const systemPrompt = `You are a helpful benefits advisor assistant. Your role is to help users discover government and community benefits they may qualify for. 
@@ -37,6 +38,8 @@ When users describe their situation, ask clarifying questions about:
 - State/location
 - Family size
 - Any specific needs or challenges
+
+The user has already selected the life-situation category: ${lifeSituation || 'not specified'}. Use that selection to tailor the guidance and benefit suggestions.
 
 Based on their responses, recommend relevant benefits from the available database.
 

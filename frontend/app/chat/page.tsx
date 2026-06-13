@@ -14,15 +14,18 @@ interface Benefit {
   eligibility: string
 }
 
+const LIFE_SITUATION_OPTIONS = ['student', 'employed', 'unemployed', 'retired', 'other']
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
       content:
-        'Hello! I\'m here to help you find benefits you may qualify for. Let me ask you a few questions to get started.\n\nFirst, what\'s your current life situation? For example: student, employed, unemployed, retired, etc.',
+        'Hello! I\'m here to help you find benefits you may qualify for. Let me ask you a few questions to get started.\n\nFirst, please choose your current life situation from the options below so I can tailor the recommendations.',
     },
   ])
   const [inputValue, setInputValue] = useState('')
+  const [selectedSituation, setSelectedSituation] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [recommendations, setRecommendations] = useState<Benefit[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -37,11 +40,17 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputValue.trim()) return
+
+    const situation = selectedSituation || 'other'
+    const messageText = inputValue.trim()
+      ? `My current life situation is ${situation}. ${inputValue.trim()}`
+      : `My current life situation is ${situation}.`
+
+    if (!messageText.trim()) return
 
     const userMessage: Message = {
       role: 'user',
-      content: inputValue,
+      content: messageText,
     }
 
     setMessages((prev) => [...prev, userMessage])
@@ -51,7 +60,8 @@ export default function ChatPage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
       const response = await axios.post(`${apiUrl}/api/chat`, {
-        message: inputValue,
+        message: messageText,
+        lifeSituation: situation,
         conversationHistory: messages,
       })
 
@@ -133,6 +143,28 @@ export default function ChatPage() {
           </div>
         )}
 
+        {/* Situation selector */}
+        <div className="mx-4 mt-4 rounded-lg border border-blue-100 bg-white p-4 shadow-sm">
+          <label htmlFor="lifeSituation" className="text-sm font-semibold text-gray-800">
+            Current life situation
+          </label>
+          <p className="mt-1 text-xs text-gray-500">Pick one of the starter options to personalize the recommendations and the Firestore session context.</p>
+          <select
+            id="lifeSituation"
+            value={selectedSituation}
+            onChange={(e) => setSelectedSituation(e.target.value)}
+            disabled={isLoading}
+            className="mt-3 w-full rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:bg-gray-100"
+          >
+            <option value="">Select a situation</option>
+            {LIFE_SITUATION_OPTIONS.map((option) => (
+              <option key={option} value={option} className="capitalize">
+                {option}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Input */}
         <form onSubmit={handleSendMessage} className="border-t bg-white p-4 mx-4 mb-4 rounded-lg">
           <div className="flex gap-2">
@@ -140,7 +172,7 @@ export default function ChatPage() {
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your response..."
+              placeholder="Add details about your situation, income, or needs..."
               disabled={isLoading}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-gray-100"
             />
